@@ -62,15 +62,13 @@ int main(int argc, char* argv[])
             std::bind(
                 &controller_session::write,
                 c_session,
-                std::placeholders::_1,
-                std::placeholders::_2));
+                std::placeholders::_1));
 
         dispatcher_from_controller.setDefaultCallback(
             std::bind(
                 &switch_session::write,
                 s_session,
-                std::placeholders::_1,
-                std::placeholders::_2));
+                std::placeholders::_1));
 
         s_session->set_dispatcher(dispatcher_from_switch);
         c_session->set_dispatcher(dispatcher_from_controller);

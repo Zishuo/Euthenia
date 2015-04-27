@@ -51,18 +51,18 @@ void controller_session::handle_read_header(const boost::system::error_code& err
                             boost::asio::transfer_exactly(length),
                             boost::bind(&controller_session::handle_read,this,
                                         boost::asio::placeholders::error,
-                                        boost::asio::placeholders::bytes_transferred, header));
+                                        boost::asio::placeholders::bytes_transferred));
 }
 
 void controller_session::handle_read(const boost::system::error_code& error,
-                                     size_t bytes_transferred,
-                                     ofp_header * header)
+                                     size_t bytes_transferred)
 
 {
+    ofp_header * header = (ofp_header *)data_;
     size_t length = ntohs(header->length);
     if (!error)
     {
-        BOOST_LOG_TRIVIAL(debug) << "controller_session | handle_read " << data_to_string(length);
+        BOOST_LOG_TRIVIAL(debug) << "controller_session | handle_read " << to_hex_string((char *)data_,length);
         dispatcher_.onMessage(data_);
         read();
     }
@@ -72,36 +72,38 @@ void controller_session::handle_read(const boost::system::error_code& error,
     }
 }
 
-void controller_session::write(void *message_ptr, size_t length)
+void controller_session::write(std::shared_ptr<std::string> message)
 {
     BOOST_LOG_TRIVIAL(trace) << "controller_session | write";
-    io_service_.post(boost::bind(&controller_session::write_in_io_thread,this,message_ptr, length));
+    io_service_.post(boost::bind(&controller_session::write_in_io_thread,this,message));
 }
 
-void controller_session::write_in_io_thread(void * message_ptr, size_t length)
+void controller_session::write_in_io_thread(std::shared_ptr<std::string> message)
 {
-    ofp_header * header = (ofp_header*)message_ptr;
+    ofp_header * header = (ofp_header*)message->c_str();
     BOOST_LOG_TRIVIAL(debug) << "controller_session | write_in_io_thread : "
                              << " xid " << ntohl(header->xid)
                              << " length " << htons(header->length)
                              << " type " << ofp_type(header->type);
 
-    boost::asio::async_write(s_session_->socket(),
-                             boost::asio::buffer(message_ptr, length),
+    boost::asio::async_write(this->socket(),
+                             boost::asio::buffer(message->c_str(), message->length()),
                              boost::bind(&controller_session::handle_write,
                                          this,
                                          boost::asio::placeholders::error,
-                                         boost::asio::placeholders::bytes_transferred
+                                         boost::asio::placeholders::bytes_transferred,
+                                         message
                                         )
                             );
 }
 
 
 
-void controller_session::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
+void controller_session::handle_write(const boost::system::error_code& error, size_t bytes_transferred, std::shared_ptr<std::string> message)
 {
     if (!error)
     {
+        BOOST_LOG_TRIVIAL(debug) << "controller_session | handle_write: " << to_hex_string(message->c_str(), message->length());
     }
     else
     {

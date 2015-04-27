@@ -2,6 +2,8 @@
 #include <arpa/inet.h>
 #include <map>
 #include <functional>
+#include <string>
+#include <memory>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
@@ -10,7 +12,7 @@ class Dispatcher
 {
 public:
 
-    void setCallBackOnMessage(ofp_type type, std::function<void(void * message)> f)
+    void setCallBackOnMessage(ofp_type type, std::function<void(std::shared_ptr<std::string>)> f)
     {
         funs[type] = f;
     };
@@ -20,7 +22,7 @@ public:
 
     };
 
-    void setDefaultCallback(std::function<void(void * Message_ptr, size_t length)> callback)
+    void setDefaultCallback(std::function<void(std::shared_ptr<std::string> message)> callback)
     {
         defaultCallback = callback;
     };
@@ -29,18 +31,18 @@ public:
     {
         ofp_header * header = (ofp_header * )message_ptr;
         size_t length = ntohs(header->length);
-        BOOST_LOG_TRIVIAL(trace) << "Dispatcher | onMessage";
 
+        BOOST_LOG_TRIVIAL(trace) << "Dispatcher | onMessage";
+        std::shared_ptr<std::string> new_message = std::make_shared<std::string>((char *)message_ptr, length);
+            
         //can not find registed call back for message type
         if(funs.find((ofp_type)header->type) == funs.end())
         {
 
             if(defaultCallback != NULL)
             {
-                char * new_message = new char[length];
-                std::copy_n((char *)message_ptr, length, new_message);
                 BOOST_LOG_TRIVIAL(trace) << "Dispatcher | defaultCallback";
-                defaultCallback(new_message, length);
+                defaultCallback(new_message);
             }
             else
             {
@@ -50,7 +52,7 @@ public:
         else
         {
             //invoke message callback respectively
-            funs[(ofp_type)(header->type)](message_ptr);
+            funs[(ofp_type)(header->type)](new_message);
 
         }
     };
@@ -61,6 +63,6 @@ public:
     };
 
 private:
-    std::map<ofp_type,std::function<void(void * Message)>> funs;
-    std::function<void(void * Message_ptr, size_t length)> defaultCallback;
+    std::map<ofp_type,std::function<void(std::shared_ptr<std::string> message)>> funs;
+    std::function<void(std::shared_ptr<std::string> message)> defaultCallback;
 };

@@ -67,7 +67,7 @@ void switch_session::handle_read(const boost::system::error_code& error,
     size_t length = ntohs(header->length);
     if (!error)
     {
-        BOOST_LOG_TRIVIAL(debug) << "switch_session | handle_read " << data_to_string(length);
+        BOOST_LOG_TRIVIAL(debug) << "switch_session | handle_read " << to_hex_string((char *)data_, length);
         dispatcher_.onMessage(data_);
         read();
     }
@@ -77,34 +77,38 @@ void switch_session::handle_read(const boost::system::error_code& error,
     }
 }
 
-void switch_session::write(void * message_ptr, size_t length)
+void switch_session::write(std::shared_ptr<std::string> message)
 {
     BOOST_LOG_TRIVIAL(trace) << "switch_session | write";
-    io_service_.post(boost::bind(&switch_session::write_in_io_thread,this,message_ptr, length));
+    io_service_.post(boost::bind(&switch_session::write_in_io_thread,this,message));
 }
 
-void switch_session::write_in_io_thread(void * message_ptr, size_t length)
+void switch_session::write_in_io_thread(std::shared_ptr<std::string> message)
 {
-    ofp_header * header = (ofp_header*)message_ptr;
+    ofp_header * header = (ofp_header*)message->c_str();
     BOOST_LOG_TRIVIAL(debug) << "switch_session | write_in_io_thread : "
                              << " xid " << ntohl(header->xid)
                              << " length " << htons(header->length)
                              << " type " << ofp_type(header->type);
 
-    boost::asio::async_write(c_session_->socket(),
-                             boost::asio::buffer(message_ptr, length),
+    boost::asio::async_write(this->socket(),
+                             boost::asio::buffer(message->c_str(), message->length()),
                              boost::bind(&switch_session::handle_write,
                                          this,
                                          boost::asio::placeholders::error,
-                                         boost::asio::placeholders::bytes_transferred
+                                         boost::asio::placeholders::bytes_transferred,
+                                         message
                                         )
                             );
 }
 
-void switch_session::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
+void switch_session::handle_write(const boost::system::error_code& error, 
+        size_t bytes_transferred,
+        std::shared_ptr<std::string> message)
 {
     if (!error)
     {
+        BOOST_LOG_TRIVIAL(debug) << "switch_session | handle_write : " << to_hex_string(message->c_str(), message->length());
     }
     else
     {

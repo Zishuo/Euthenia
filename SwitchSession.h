@@ -12,15 +12,15 @@ public:
 
     void start();
     void read();
-    void write(void * message_ptr, size_t length);
-    void write_in_io_thread(void * message_ptr, size_t length);
+    void write(std::shared_ptr<std::string> message);
+    void write_in_io_thread(std::shared_ptr<std::string> message);
     void set_controller_session(controller_session* c_session);
     void set_dispatcher(const Dispatcher & dispatcher);
     ~switch_session() {};
 private:
     void handle_read(const boost::system::error_code& error, size_t bytes_transferred, ofp_header * header);
     void handle_read_header(const boost::system::error_code& error, size_t bytes_transferred);
-    void handle_write(const boost::system::error_code& error, size_t bytes_transferred);
+    void handle_write(const boost::system::error_code& error, size_t bytes_transferred, std::shared_ptr<std::string> message);
     controller_session* c_session_;
     Dispatcher dispatcher_;
 };

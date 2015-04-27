@@ -10,15 +10,15 @@ public:
         :session(io_service){};
     void start();
     void read();
-    void write_in_io_thread(void * message_ptr, size_t length);
-    void write(void * message_ptr, size_t length);
+    void write_in_io_thread(std::shared_ptr<std::string> message);
+    void write(std::shared_ptr<std::string> message);
     void set_dispatcher(const Dispatcher & dispatcher);
     void set_switch_session(switch_session* s_session);
     ~controller_session() {};
 private:
     void handle_read_header(const boost::system::error_code& error, size_t bytes_transferred);
-    void handle_read(const boost::system::error_code& error, size_t bytes_transferred, ofp_header * header);
-    void handle_write(const boost::system::error_code& error, size_t bytes_transferred);
+    void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
+    void handle_write(const boost::system::error_code& error, size_t bytes_transferred, std::shared_ptr<std::string> message);
     switch_session* s_session_;
     Dispatcher dispatcher_;
 };

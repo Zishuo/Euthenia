@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <sstream>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include "openflow.h"
@@ -25,7 +27,16 @@ public:
 protected:
     boost::asio::io_service & io_service_;
     tcp::socket socket_;
-    enum { max_length = 1024 };
-    char data_[max_length];
+    enum { max_length = 102400 };
+    std::string data_to_string(size_t length)
+    {
+        std::stringstream ss;
+        for(size_t i = 0; i < length; ++i)
+        {
+            ss << std::hex << (unsigned short)data_[i] << " ";
+        }
+        return ss.str();
+    }
+    unsigned char data_[max_length];
 };
 

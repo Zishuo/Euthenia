@@ -45,8 +45,9 @@ void switch_session::handle_read_header(const boost::system::error_code& error,
     size_t length = htons(header->length) - sizeof(ofp_header);
     if(length == 0)
     {
-       BOOST_LOG_TRIVIAL(trace) << "switch_session | handle_read_header OFP Message Body length 0";
-       dispatcher_.onMessage(data_); 
+        BOOST_LOG_TRIVIAL(trace) << "switch_session | handle_read_header OFP Message Body length 0";
+        dispatcher_.onMessage(data_);
+        read();
     }
     else
     {
@@ -102,9 +103,9 @@ void switch_session::write_in_io_thread(std::shared_ptr<std::string> message)
                             );
 }
 
-void switch_session::handle_write(const boost::system::error_code& error, 
-        size_t bytes_transferred,
-        std::shared_ptr<std::string> message)
+void switch_session::handle_write(const boost::system::error_code& error,
+                                  size_t bytes_transferred,
+                                  std::shared_ptr<std::string> message)
 {
     if (!error)
     {

@@ -46,12 +46,21 @@ void controller_session::handle_read_header(const boost::system::error_code& err
                              << " type "<< ofp_type(header->type);
 
     size_t length = htons(header->length) - sizeof(ofp_header);
-    boost::asio::async_read(socket_,
-                            boost::asio::buffer(data_ + sizeof(ofp_header), length),
-                            boost::asio::transfer_exactly(length),
-                            boost::bind(&controller_session::handle_read,this,
-                                        boost::asio::placeholders::error,
-                                        boost::asio::placeholders::bytes_transferred));
+    if(length == 0)
+    {
+        BOOST_LOG_TRIVIAL(trace) << "control_session | handle_read_header OFP Message Body length 0";
+        dispatcher_.onMessage(data_);
+        read();
+    }
+    else
+    {
+        boost::asio::async_read(socket_,
+                                boost::asio::buffer(data_ + sizeof(ofp_header), length),
+                                boost::asio::transfer_exactly(length),
+                                boost::bind(&controller_session::handle_read,this,
+                                            boost::asio::placeholders::error,
+                                            boost::asio::placeholders::bytes_transferred));
+    }
 }
 
 void controller_session::handle_read(const boost::system::error_code& error,

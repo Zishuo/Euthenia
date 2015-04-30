@@ -41,3 +41,4 @@ protected:
     }
 };
 
+typedef std::shared_ptr<std::string> Message;

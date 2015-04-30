@@ -12,6 +12,8 @@
 #include "SwitchSession.h"
 #include "ControllerSession.h"
 #include "Dispatcher.h"
+#include "Packet_in_Monitor.h"
+#include "Packet_in_Migrator.h"
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -69,6 +71,17 @@ int main(int argc, char* argv[])
                 &switch_session::write,
                 s_session,
                 std::placeholders::_1));
+        //initialize packet in Migrator
+        PKTMigrator PKTMTG(s_session,3);
+        //set packet_in callback
+        PKTINMonitor PKTM(500,100);
+        PKTM.set_trigger_action(std::bind(&PKTMigrator::switch_path, &PKTMTG));
+        PKTM.set_follow_action(
+                std::bind(
+                    &controller_session::write, 
+                    c_session,
+                    std::placeholders::_1));
+        
 
         s_session->set_dispatcher(dispatcher_from_switch);
         c_session->set_dispatcher(dispatcher_from_controller);

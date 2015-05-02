@@ -10,7 +10,7 @@ class PKTINMonitor
 {
 public:
     PKTINMonitor(unsigned int sample_rate, unsigned int threshold)
-        :sample_rate_(sample_rate),thresh_hold_(threshold),is_running(true)
+        :worker(NULL), counter(0), sample_rate_(sample_rate),thresh_hold_(threshold),is_running(true)
     {
     }
 
@@ -70,7 +70,7 @@ private:
             BOOST_LOG_TRIVIAL(debug) << "PKTINMonitor | clear : " << counter;
             if(counter >= thresh_hold_)
             {
-                BOOST_LOG_TRIVIAL(debug) << "PKTINMonitor | exceed threshhold, triger action";
+                BOOST_LOG_TRIVIAL(debug) << "PKTINMonitor | exceed threshhold, trigger action";
                 action_();
             }
         }

@@ -4,11 +4,11 @@
 #include "Dispatcher.h"
 #include "openflow.h"
 class controller_session;
-class switch_session:public session
+class switch_session:public Session
 {
 public:
     switch_session(boost::asio::io_service& io_service)
-        : session(io_service) {};
+        : Session(io_service) {};
 
     void start();
     void read();

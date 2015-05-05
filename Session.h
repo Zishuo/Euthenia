@@ -7,10 +7,10 @@
 #include "openflow.h"
 using boost::asio::ip::tcp;
 
-class session
+class Session
 {
 public:
-    session(boost::asio::io_service& io_service)
+    Session(boost::asio::io_service& io_service)
         : io_service_(io_service),socket_(io_service)
     {
     }
@@ -22,7 +22,7 @@ public:
     virtual void start() {};
     virtual void read() {};
     virtual void write(std::shared_ptr<std::string> message) {};
-    virtual ~session() {};
+    virtual ~Session() {};
 protected:
     enum { max_length = 102400 };
     virtual void handle_read(const boost::system::error_code& error, size_t bytes_transferred) {};

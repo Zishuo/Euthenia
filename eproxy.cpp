@@ -12,8 +12,8 @@
 #include "SwitchSession.h"
 #include "ControllerSession.h"
 #include "Dispatcher.h"
-#include "Packet_in_Monitor.h"
-#include "Packet_in_Migrator.h"
+#include "PacketInMonitor.h"
+#include "PacketInMigrator.h"
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -55,11 +55,11 @@ int main(int argc, char* argv[])
 
         Dispatcher dispatcher_from_switch;
         Dispatcher dispatcher_from_controller;
-//        Dispatcher dispatcher_from_ovs;
+        Dispatcher dispatcher_from_ovs;
 
         switch_session* s_session = new switch_session(io_service);
         controller_session* c_session = new controller_session(io_service);
-//        switch_session* ovs_session = new switch_session(io_service);
+        switch_session* ovs_session = new switch_session(io_service);
 
         //set Default Callbcak for Dispatcher
         dispatcher_from_switch.setDefaultCallback(
@@ -74,10 +74,10 @@ int main(int argc, char* argv[])
                 s_session,
                 std::placeholders::_1));
 
-//        dispatcher_from_ovs.setDefaultCallback(std::bind(
-//                &controller_session::write,
-//                c_session,
-//                std::placeholders::_1));
+        dispatcher_from_ovs.setDefaultCallback(std::bind(
+                &controller_session::write,
+                c_session,
+                std::placeholders::_1));
 
         //initialize packet in Migrator
         PKTMigrator PKTMTG(s_session,(unsigned int)3);
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
         //setup ovs dispatcher
         s_session->set_dispatcher(dispatcher_from_switch);
         c_session->set_dispatcher(dispatcher_from_controller);
-//        ovs_session->set_dispatcher(dispatcher_from_ovs);
+        ovs_session->set_dispatcher(dispatcher_from_ovs);
 
         //connect to controller
         boost::asio::ip::address c_ip =  boost::asio::ip::address::from_string("128.238.147.221");
@@ -115,9 +115,9 @@ int main(int argc, char* argv[])
         BOOST_LOG_TRIVIAL(info) << "switch session started";
 
         //listen from ovs
-//        boost::asio::ip::tcp::acceptor ovs_acpt(io_service,boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(),9001));
-//        ovs_acpt.accept(ovs_session->socket());
-//        BOOST_LOG_TRIVIAL(info) << "ovs session started";
+        boost::asio::ip::tcp::acceptor ovs_acpt(io_service,boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(),9001));
+        ovs_acpt.accept(ovs_session->socket());
+        BOOST_LOG_TRIVIAL(info) << "ovs session started";
 
 
         PKTM.start();

@@ -3,11 +3,11 @@
 #include "SwitchSession.h"
 #include "Dispatcher.h"
 class switch_session;
-class controller_session:public session
+class controller_session:public Session
 {
 public:
     controller_session(boost::asio::io_service& io_service)
-        :session(io_service){};
+        :Session(io_service){};
     void start();
     void read();
     void write_in_io_thread(std::shared_ptr<std::string> message);

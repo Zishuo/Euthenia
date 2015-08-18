@@ -2,27 +2,27 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include "SwitchSession.h"
+#include "Session.h"
 class PKTMigrator
 {
 public:
-    PKTMigrator(switch_session* s_session, unsigned int eproxy_data_path_port):eproxy_data_path_port_(eproxy_data_path_port)
+    PKTMigrator(Session* session, unsigned int eproxy_data_path_port):eproxy_data_path_port_(eproxy_data_path_port)
     {
-        s_session_ = s_session;
+        session_ = session;
     };
 
     void switch_path()
     {
         BOOST_LOG_TRIVIAL(info) << "PKTMigrator | switch_path : switch control path";
         Message message = prepare_switch(eproxy_data_path_port_);
-        s_session_->write(message);
+        session_->write(message);
     }
 
     void draw_back()
     {
         BOOST_LOG_TRIVIAL(info) << "PKTMigrator | draw_back : draw back control path proxy";
         Message message = prepare_drawback();
-        s_session_->write(message);
+        session_->write(message);
     }
 
 private:
@@ -106,7 +106,7 @@ private:
         return message;
     };
 
-    switch_session* s_session_;
+    Session * session_;
     unsigned int eproxy_data_path_port_;
     const uint64_t COOKIE_SWITCH = 0x627;
 };

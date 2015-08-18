@@ -18,12 +18,15 @@ message(STATUS "this is binary dir " ${PROJECT_BINARY_DIR})
 include_directories(./)
 include_directories(Boost_INCLUDE_DIRS)
 
-add_executable(eproxy eproxy.cpp SwitchSession.cpp ControllerSession.cpp)
+#AUX_SOURCE_DIRECTORY(./ source)
+
+add_executable(eTester PacketInTester.cpp PerformanceTest.cpp  Session.cpp FlowGen.cpp)
 if(UNIX)
 	target_link_libraries(
-        eproxy
+        eTester 
         ${Boost_LIBRARIES}
 		pthread
+        pcap
 		)
 elseif(WIN32)
 elseif(APPLE)

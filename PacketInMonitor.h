@@ -9,6 +9,7 @@
 class PKTINMonitor
 {
 public:
+    //sample_rate unit ms
     PKTINMonitor(unsigned int sample_rate, unsigned int threshold)
         :worker(NULL), counter(0), sample_rate_(sample_rate),thresh_hold_(threshold),is_running(true)
     {
@@ -24,7 +25,8 @@ public:
         }
     }
 
-    void onMessage(Message message){
+    void onMessage(Message message)
+    {
         BOOST_LOG_TRIVIAL(trace) << "PKTINMonitor | onMessage";
         add_counter();
         follow_(message);
@@ -32,7 +34,7 @@ public:
 
     void add_counter()
     {
-        BOOST_LOG_TRIVIAL(debug) << "PKTINMonitor | add_counter : " << counter;    
+        BOOST_LOG_TRIVIAL(debug) << "PKTINMonitor | add_counter : " << counter;
         ++counter;
     }
 
@@ -51,8 +53,9 @@ public:
         action_ = action;
     };
 
-    void set_follow_action(std::function<void(Message)> action){
-        follow_ = action; 
+    void set_follow_action(std::function<void(Message)> action)
+    {
+        follow_ = action;
     }
 
     void stop()

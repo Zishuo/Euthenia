@@ -19,8 +19,8 @@ void PacketInTester::send_hello()
     hello_ptr->length = htons(sizeof(ofp_header));
     hello_ptr->xid = htonl(get_XID());
 
-    boost::shared_ptr<std::string> hello_str =
-        boost::make_shared<std::string>(hello);
+    std::shared_ptr<std::string> hello_str =
+        std::make_shared<std::string>(hello);
     session_.write(hello_str);
 }
 
@@ -34,8 +34,8 @@ void PacketInTester::send_feature_request()
     feature_request_ptr->length = htons(sizeof(ofp_header));
     feature_request_ptr->xid = htonl(get_XID());
 
-    boost::shared_ptr<std::string> feature_request_str =
-        boost::make_shared<std::string>(feature_request);
+    std::shared_ptr<std::string> feature_request_str =
+        std::make_shared<std::string>(feature_request);
     session_.write(feature_request_str);
 }
 
@@ -50,4 +50,16 @@ void PacketInTester::onMessage(Message msg)
     }
     data[group_index].last_packet_time_stamp = now.tv_sec;
     data[group_index].successed_PKTIN_++;
+}
+
+void PacketInTester::test()
+{
+    uint32_t start = 10;
+    uint32_t end = 2000;
+    uint32_t step = 100;
+    for(uint32_t i = start; i <= end; i+=step)
+    {
+        Group group;
+        group_test(group, 5, i);
+    }
 }

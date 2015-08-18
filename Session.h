@@ -9,7 +9,7 @@
 #include "Dispatcher.h"
 using boost::asio::ip::tcp;
 
-typedef boost::shared_ptr<std::string> Message;
+typedef std::shared_ptr<std::string> Message;
 
 class Session
 {

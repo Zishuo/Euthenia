@@ -17,7 +17,11 @@ class FlowGen
 public:
     FlowGen(char * device_name)
     {
-        pd = pcap_open_live(device_name,1514,1,1000,ebuf);
+	if(strcmp(device_name,"dry_run") == 0){
+		pd = nullptr; 
+	}else{
+        	pd = pcap_open_live(device_name,1514,1,1000,ebuf);
+	}
     };
     int test(int beg_new_flow, int end_new_flow, int step);
     int a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_sec,
@@ -34,4 +38,5 @@ protected:
     int make_pkt(u_char **pkt_data, u_int *pkt_len);
     int timeval_subtract (timespec *result, timespec * x, timespec *y);
     int timespec_add(timespec *result, timespec * x, timespec * y);
+    int send_packet(Message m);
 };

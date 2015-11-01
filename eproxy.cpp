@@ -78,11 +78,11 @@ int main(int argc, char* argv[])
                 std::placeholders::_1));
 
         //initialize packet in Migrator
-        PKTMigrator PKTMTG(s_session,(unsigned int)3);
+        PKTMigrator migrator(s_session,(unsigned int)3);
         //set packet_in callback
-        PKTINMonitor PKTM(500,10);
-        PKTM.set_trigger_action(std::bind(&PKTMigrator::switch_path, &PKTMTG));
-        PKTM.set_follow_action(
+        PKTINMonitor monitor(500,10);
+        monitor.set_trigger_action(std::bind(&PKTMigrator::switch_path, &migrator));
+        monitor.set_follow_action(
             std::bind(
                 &Session::write,
                 c_session,
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
         //setup s_session dispatcher
         dispatcher_from_switch.setCallBackOnMessage(OFPT_PACKET_IN,std::bind(
                     &PKTINMonitor::onMessage,
-                    &PKTM,
+                    &monitor,
                     std::placeholders::_1
                 ) );
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
         //BOOST_LOG_TRIVIAL(info) << "ovs session started";
 
 
-        PKTM.start();
+        monitor.start();
         s_session->start();
         c_session->start();
         //ovs_session->start();

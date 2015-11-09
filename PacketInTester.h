@@ -21,7 +21,7 @@ public:
 class PacketInTester
 {
 public:
-    PacketInTester(FlowGen & flow_gen):session_(null), flow_gen_(flow_gen)
+    PacketInTester(FlowGen & flow_gen, Session & session):session_(session), flow_gen_(flow_gen)
     {
         XID = 0;
     };

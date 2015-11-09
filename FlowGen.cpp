@@ -1,5 +1,11 @@
 #include "FlowGen.h"
 
+int FlowGen::send_packet(uint8_t * pkt_data, uint32_t pkt_len)
+{
+	//TODO:for dry run testing
+	return 0;
+}
+
 int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_sec, uint32_t interval, char *dstb)
 {
 	timespec nsleep = {0,nsec/packet_per_sec};
@@ -8,24 +14,29 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 	timespec result;
 	clock_gettime(CLOCK_REALTIME,&sec_beg);
 
-	while(is_run) {
+	while(is_run)
+	{
 		//determin if terminate this burst
 		clock_gettime(CLOCK_REALTIME,&sec_end);
 		timeval_subtract(&result, &sec_end , &sec_beg);
-		if(result.tv_sec >= last_sec) {
+		if(result.tv_sec >= last_sec)
+		{
 			is_run = false;
 			break;
 		}
 
 		//transmit packets
-		for(unsigned int i = 0; i < fector; ++i) {
-			u_char *pkt_data = nullptr;
-			u_int pkt_len = 0;
+		for(unsigned int i = 0; i < fector; ++i)
+		{
+			uint8_t*pkt_data = nullptr;
+			uint32_t pkt_len = 0;
 			make_pkt(&pkt_data,&pkt_len);
 			if(pd == nullptr)
-				send_packet();
-			else {
-				if(pcap_sendpacket(pd,pkt_data,pkt_len) == -1) {
+				send_packet(pkt_data,pkt_len);
+			else
+			{
+				if(pcap_sendpacket(pd,pkt_data,pkt_len) == -1)
+				{
 					++failed;
 					cerr << pcap_geterr(pd) << endl ;
 
@@ -39,9 +50,11 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 		timespec_add(&deadline, &deadline, &nsleep);
 		timespec now;
 		clock_gettime(CLOCK_REALTIME, &now);
-		if(timeval_subtract(&result,&deadline,&now) != 1) {
+		if(timeval_subtract(&result,&deadline,&now) != 1)
+		{
 			//have more time,spleep
-			if(nanosleep(&result, NULL) == -1) {
+			if(nanosleep(&result, NULL) == -1)
+			{
 				cerr << "nanosleep():" << strerror(errno) << endl;
 			}
 		}
@@ -58,12 +71,14 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 int FlowGen::timeval_subtract (timespec *result,timespec * x, timespec *y)
 {
 	/* Perform the carry for the later subtraction by updating y. */
-	if (x->tv_nsec < y->tv_nsec) {
+	if (x->tv_nsec < y->tv_nsec)
+	{
 		int nsec = (y->tv_nsec - x->tv_nsec) / 1000000000 + 1;
 		y->tv_nsec -= 1000000000 * nsec;
 		y->tv_sec += nsec;
 	}
-	if (x->tv_nsec - y->tv_nsec > 1000000000) {
+	if (x->tv_nsec - y->tv_nsec > 1000000000)
+	{
 		int nsec = (x->tv_nsec - y->tv_nsec) / 1000000000;
 		y->tv_nsec += 1000000000 * nsec;
 		y->tv_sec -= nsec;
@@ -82,7 +97,8 @@ int FlowGen::timespec_add(timespec* result, timespec* x, timespec* y)
 {
 	uint8_t inc = 0;
 	uint32_t sub = x->tv_nsec + y->tv_nsec;
-	if(sub >= nsec) {
+	if(sub >= nsec)
+	{
 		sub += nsec;
 		inc = 1;
 	}

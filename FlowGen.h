@@ -10,6 +10,7 @@
 #include <pcap.h>
 #include <vector>
 #include "header_defu.h"
+#include "Session.h"
 
 using namespace std;
 class FlowGen
@@ -38,5 +39,5 @@ protected:
     int make_pkt(u_char **pkt_data, u_int *pkt_len);
     int timeval_subtract (timespec *result, timespec * x, timespec *y);
     int timespec_add(timespec *result, timespec * x, timespec * y);
-    int send_packet(Message m);
+    int send_packet(uint8_t * pkt_data, uint32_t pkt_len);
 };

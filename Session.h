@@ -24,8 +24,8 @@ public:
         return socket_;
     }
     void start();
-    void listen();
-    void connect();
+    void listen(uint16_t port, std::string = "0.0.0.0");
+    void connect(uint16_t port, std::string);
     void read();
     void write(Message message);
     ~Session() {};
@@ -52,5 +52,7 @@ protected:
     tcp::socket socket_;
     Dispatcher dispatcher_;
     std::string name_;
+    std::string ip_;
+    uint16_t port_;
 };
 typedef std::shared_ptr<Session> Session_ptr;

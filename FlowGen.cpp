@@ -2,7 +2,8 @@
 
 int FlowGen::send_packet(uint8_t * pkt_data, uint32_t pkt_len)
 {
-	//TODO:for dry run testing
+    Message message(pkt_data,pkt_len);
+    onMessage_(message);
 	return 0;
 }
 
@@ -31,7 +32,7 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 			uint8_t*pkt_data = nullptr;
 			uint32_t pkt_len = 0;
 			make_pkt(&pkt_data,&pkt_len);
-			if(pd == nullptr)
+			if(onMessage_ != nullptr)
 				send_packet(pkt_data,pkt_len);
 			else
 			{

@@ -2,7 +2,7 @@
 
 int FlowGen::send_packet(uint8_t * pkt_data, uint32_t pkt_len)
 {
-    Message message(pkt_data,pkt_len);
+    Message message = std::make_shared<std::string>((char *)pkt_data, pkt_len);
     onMessage_(message);
 	return 0;
 }
@@ -44,7 +44,7 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 				}
 			}
 			delete (sniff_ethernet*)pkt_data;
-			++pkt_cnt;
+            ++*pkt_sent;
 		}
 
 		//determine if need sleep
@@ -60,7 +60,6 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 			}
 		}
 	}
-	*pkt_sent = pkt_cnt;
 	return 0;
 }
 

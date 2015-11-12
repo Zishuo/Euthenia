@@ -31,7 +31,6 @@ protected:
 	bool is_run = true;
 	pcap_t * pd = nullptr;
 	unsigned int failed = 0;
-	unsigned int pkt_cnt = 0;
 	unsigned int fector = 1;
 	int make_pkt(u_char **pkt_data, u_int *pkt_len);
 	int timeval_subtract (timespec *result, timespec * x, timespec *y);

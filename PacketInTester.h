@@ -2,6 +2,10 @@
 #include <atomic>
 #include <string>
 #include <thread>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
+
 #include "FlowGen.h"
 #include "Session.h"
 using namespace std;
@@ -42,7 +46,7 @@ protected:
 	{
 		return ++XID;
 	}
-    void do_test();
+	void do_test();
 	Session & session_;
 	FlowGen & flow_gen_;
 	boost::asio::io_service & ios_;
@@ -50,7 +54,7 @@ protected:
 	const int group_interval = 5;
 	uint32_t group_index = 0;
 	vector<Group> data;
-    shared_ptr<std::thread> tester_t;
+	shared_ptr<std::thread> tester_t;
 };
 
 typedef std::shared_ptr<PacketInTester> PktTst_ptr;

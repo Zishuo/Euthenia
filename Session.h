@@ -24,7 +24,7 @@ public:
         return socket_;
     }
     void start();
-    void listen(uint16_t port, std::string = "0.0.0.0");
+    void listen(uint16_t port, std::string = "127.0.0.1");
     void connect(uint16_t port, std::string);
     void read();
     void write(Message message);
@@ -36,15 +36,6 @@ protected:
     void handle_read_header(const boost::system::error_code& error, size_t bytes_transferred);
     void handle_read(const boost::system::error_code& error, size_t bytes_transferred, ofp_header * header);
 
-    static std::string to_hex_string(const char * data, size_t length)
-    {
-        std::stringstream ss;
-        for(size_t i = 0; i < length; ++i)
-        {
-            ss << std::hex << (unsigned short)((unsigned char)data[i]) << " ";
-        }
-        return ss.str();
-    }
 protected:
     enum { max_length = 102400 };
     unsigned char data_[max_length];

@@ -20,8 +20,8 @@ include_directories(Boost_INCLUDE_DIRS)
 
 #AUX_SOURCE_DIRECTORY(./ source)
 
-add_executable(eTester UnitTest_PacketInTester.cpp PacketInTester.cpp  Session.cpp FlowGen.cpp)
-add_executable(eproxy eproxy.cpp Session.cpp)
+add_executable(eTester UnitTest_PacketInTester.cpp PacketInTester.cpp  Session.cpp FlowGen.cpp utility.cpp)
+add_executable(eproxy eproxy.cpp Session.cpp utility.cpp)
 if(UNIX)
 	target_link_libraries(
         eTester 

@@ -1,6 +1,6 @@
 #include "PacketInTester.h"
 #include "openflow.h"
-
+#include "utility.h"
 void PacketInTester::send_hello()
 {
 	char hello[sizeof(ofp_header)];
@@ -9,14 +9,16 @@ void PacketInTester::send_hello()
 	hello_ptr->version = OFP_VERSION;
 	hello_ptr->length = htons(sizeof(ofp_header));
 	hello_ptr->xid = htonl(get_XID());
+    
 
-	std::shared_ptr<std::string> hello_str =
-	    std::make_shared<std::string>(hello);
+	Message hello_str = std::make_shared<std::string>(hello,sizeof(ofp_header));
 	session_.write(hello_str);
+    BOOST_LOG_TRIVIAL(debug) << __func__ << " " << to_hex_string(hello_str->c_str(),sizeof(ofp_header));
 }
 
 void PacketInTester::send_feature_request(Message msg)
 {
+    ofp_header * header = (ofp_header*)msg->c_str();
 	char feature_request[sizeof(ofp_header)];
 	ofp_header *feature_request_ptr = (ofp_header *) feature_request;
 
@@ -25,14 +27,16 @@ void PacketInTester::send_feature_request(Message msg)
 	feature_request_ptr->length = htons(sizeof(ofp_header));
 	feature_request_ptr->xid = htonl(get_XID());
 
-	std::shared_ptr<std::string> feature_request_str =
-	    std::make_shared<std::string>(feature_request);
+	Message feature_request_str = std::make_shared<std::string>(feature_request,sizeof(ofp_header));
+    BOOST_LOG_TRIVIAL(debug) << __func__<< "  ofp_type " << (ofp_type)header->type << " length " << header->length;
 	session_.write(feature_request_str);
 }
 
 
 void PacketInTester::onMessage(Message msg)
 {
+    ofp_header * header = (ofp_header*)msg->c_str();
+    BOOST_LOG_TRIVIAL(debug) << __func__<< " | ofp_type " <<header->type << " length " << header->length;
 	timespec now;
 	clock_gettime(CLOCK_REALTIME, &now);
 	if(data[group_index].first_packet_time_stamp == 0)
@@ -45,7 +49,9 @@ void PacketInTester::onMessage(Message msg)
 
 void PacketInTester::group_test(Group & group, uint32_t last_sec, uint32_t packet_count)
 {
+    BOOST_LOG_TRIVIAL(debug) << __func__;
 	flow_gen_.a_burst(&group.sent_flow,  packet_count, last_sec);
+    BOOST_LOG_TRIVIAL(debug) << __func__ << "done";
 	group.time = last_sec;
 	group.sent_flow_per_sec = group.sent_flow/last_sec;
 	sleep(group_interval);
@@ -70,7 +76,7 @@ void PacketInTester::do_test()
 	uint32_t start = 10;
 	uint32_t end = 2000;
 	uint32_t step = 100;
-
+    BOOST_LOG_TRIVIAL(debug) << __func__;
 	for(uint32_t i = start; i <= end; i+=step)
 	{
 		Group group;
@@ -83,6 +89,8 @@ void PacketInTester::do_test()
 
 void PacketInTester::test(Message msg)
 {
+    ofp_header * header = (ofp_header*)msg->c_str();
+    BOOST_LOG_TRIVIAL(debug) <<" PacketInTester | " << __func__<< " ofp_type " <<(ofp_type) header->type << " length " << ntohs(header->length);
 	//new thread to do
 	tester_t = make_shared<thread>(bind(&PacketInTester::do_test, this));
 }

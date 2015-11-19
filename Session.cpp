@@ -53,10 +53,11 @@ void Session::handle_read_header(const boost::system::error_code& error,
 	ofp_header* header = (ofp_header *)data_;
 	BOOST_LOG_TRIVIAL(debug) << name_ <<" | handle_read_header : "
 	                         << " type " << ofp_type(header->type)
-	                         << " length " << htons(header->length)
-	                         << " xid " << ntohl(header->xid);
+	                         << " length " << ntohs(header->length)
+	                         << " xid " << ntohl(header->xid)
+                             << " hex string " << to_hex_string((char*)data_,sizeof(ofp_header));
 
-	size_t length = htons(header->length) - sizeof(ofp_header);
+	size_t length = ntohs(header->length) - sizeof(ofp_header);
 	if(length == 0) {
 		BOOST_LOG_TRIVIAL(trace) << name_ << " | handle_read_header OFP Message Body length 0";
 		dispatcher_.onMessage(data_);
@@ -77,18 +78,18 @@ void Session::handle_read(const boost::system::error_code& error,
                           ofp_header * header)
 {
 	size_t length = ntohs(header->length);
+    BOOST_LOG_TRIVIAL(debug) << name_ << " | "<< __func__ << " bytes_transferred " << bytes_transferred<< " " << to_hex_string((char *)data_, length);
 	if (!error) {
-		BOOST_LOG_TRIVIAL(debug) << name_ << " | handle_read " << to_hex_string((char *)data_, length);
 		dispatcher_.onMessage(data_);
 		read();
 	} else {
-		BOOST_LOG_TRIVIAL(fatal) << name_ << " | handle_read error " << error.message();
+		BOOST_LOG_TRIVIAL(fatal) << name_ << " | "<< __func__ << error.message();
 	}
 }
 
 void Session::write(Message message)
 {
-	BOOST_LOG_TRIVIAL(trace) << name_ << " | write";
+	BOOST_LOG_TRIVIAL(trace) << name_ << " | " << __func__;
 	io_service_.post(boost::bind(&Session::write_in_io_thread,this,message));
 }
 
@@ -97,8 +98,9 @@ void Session::write_in_io_thread(Message message)
 	ofp_header * header = (ofp_header*)message->c_str();
 	BOOST_LOG_TRIVIAL(debug) << name_ << " | write_in_io_thread : "
 	                         << " type " << ofp_type(header->type)
-	                         << " length " << htons(header->length)
-	                         << " xid " << ntohl(header->xid);
+	                         << " length " << ntohs(header->length)
+	                         << " xid " << ntohl(header->xid)
+                             << " hex string " << to_hex_string((char*)header,sizeof(ofp_header));
 
 	boost::asio::async_write(this->socket(),
 	                         boost::asio::buffer(message->c_str(), message->length()),

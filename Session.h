@@ -29,7 +29,7 @@ public:
     void read();
     void write(Message message);
     ~Session() {};
-    void set_dispatcher(const Dispatcher & dispatcher);
+    void set_dispatcher(Dispatcher & dispatcher);
 protected:
     void write_in_io_thread(Message message);
     void handle_write(const boost::system::error_code& error, size_t bytes_transferred, Message message);
@@ -41,7 +41,7 @@ protected:
     unsigned char data_[max_length];
     boost::asio::io_service & io_service_;
     tcp::socket socket_;
-    Dispatcher dispatcher_;
+    Dispatcher *dispatcher_;
     std::string name_;
     std::string ip_;
     uint16_t port_;

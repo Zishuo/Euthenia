@@ -2,8 +2,8 @@
 
 int FlowGen::send_packet(uint8_t * pkt_data, uint32_t pkt_len)
 {
-    Message message = std::make_shared<std::string>((char *)pkt_data, pkt_len);
-    onMessage_(message);
+	Message message = std::make_shared<std::string>((char *)pkt_data, pkt_len);
+	onMessage_(message);
 	return 0;
 }
 
@@ -14,7 +14,8 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 	timespec deadline = {0,0};
 	timespec result;
 	clock_gettime(CLOCK_REALTIME,&sec_beg);
-
+    deadline = sec_beg;
+    timespec_add(&deadline, deadline, nsleep);
 	while(is_run)
 	{
 		//determin if terminate this burst
@@ -33,29 +34,39 @@ int FlowGen::a_burst(uint32_t* pkt_sent, uint32_t packet_per_sec, uint32_t last_
 			uint32_t pkt_len = 0;
 			make_pkt(&pkt_data,&pkt_len);
 			if(onMessage_ != nullptr)
+			{
+
+
 				send_packet(pkt_data,pkt_len);
-			else
+			}
+			else if(pd != nullptr)
 			{
 				if(pcap_sendpacket(pd,pkt_data,pkt_len) == -1)
 				{
 					++failed;
 					cerr << pcap_geterr(pd) << endl ;
-
 				}
 			}
+			else
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "no sending method specified";
+
+			}
 			delete (sniff_ethernet*)pkt_data;
-            ++*pkt_sent;
+			++*pkt_sent;
 		}
 
 		//determine if need sleep
-		timespec_add(&deadline, &deadline, &nsleep);
+		timespec_add(&deadline, deadline, nsleep);
 		timespec now;
 		clock_gettime(CLOCK_REALTIME, &now);
+			BOOST_LOG_TRIVIAL(debug) << __func__ << ":" <<__LINE__ << " now " <<now.tv_sec << "." << now.tv_nsec << " deadline: " << deadline.tv_sec <<"."<<deadline.tv_nsec;
 		if(timeval_subtract(&result,&deadline,&now) != 1)
 		{
 			//have more time,spleep
 			if(nanosleep(&result, NULL) == -1)
 			{
+				BOOST_LOG_TRIVIAL(debug) << __func__ << ":" <<__LINE__;
 				cerr << "nanosleep():" << strerror(errno) << endl;
 			}
 		}
@@ -93,17 +104,17 @@ int FlowGen::timeval_subtract (timespec *result,timespec * x, timespec *y)
 	return x->tv_sec < y->tv_sec;
 }
 
-int FlowGen::timespec_add(timespec* result, timespec* x, timespec* y)
+int FlowGen::timespec_add(timespec* result, timespec x, timespec y)
 {
 	uint8_t inc = 0;
-	uint32_t sub = x->tv_nsec + y->tv_nsec;
+	uint32_t sub = x.tv_nsec + y.tv_nsec;
 	if(sub >= nsec)
 	{
 		sub += nsec;
 		inc = 1;
 	}
 
-	result->tv_sec = x->tv_sec + y->tv_sec + inc;
+	result->tv_sec = x.tv_sec + y.tv_sec + inc;
 	result->tv_nsec = sub;
 	return 0;
 }

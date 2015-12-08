@@ -34,7 +34,7 @@ public:
 		ofp_header * header = (ofp_header * )message_ptr;
 		size_t length = ntohs(header->length);
 
-		BOOST_LOG_TRIVIAL(trace) << "Dispatcher | " << __func__
+		BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__ << " | "
 		                         << " ofp_type " << (ofp_type)header->type
 		                         << " length " << length
 		                         << " hex string " << to_hex_string((char*)message_ptr,sizeof(ofp_header));
@@ -55,9 +55,8 @@ public:
 		}
 		else
 		{
-			//invoke message callback respectively
+			BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__ << " | " << " call " << funs[(ofp_type)(header->type)].target_type().name();
 			funs[(ofp_type)(header->type)](new_message);
-
 		}
 	};
 

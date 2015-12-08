@@ -7,7 +7,7 @@
 #include "PacketInTester.h"
 #include "openflow.h"
 
-void boost_log_init(int severity)
+void boost_log_init(int severity = 2)
 {
 	namespace logging = boost::log;
 	namespace keywords = boost::log::keywords;
@@ -25,6 +25,10 @@ int main(int argc, char * argv[])
 		printf("tester device_name\n");
 		return 1;
 	}
+    if( argc > 3){
+       int severity =  atoi(argv[2]);
+      boost_log_init(severity);
+    }
 
 	boost::asio::io_service io_service;
     //Flow generator will send packet on given device

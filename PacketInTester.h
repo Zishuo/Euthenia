@@ -31,7 +31,7 @@ public:
 class PacketInTester
 {
 public:
-	PacketInTester(FlowGen & flow_gen, Session & session, boost::asio::io_service & ios):session_(session), flow_gen_(flow_gen), ios_(ios)
+	PacketInTester(FlowGen & flow_gen, Session & session, boost::asio::io_service & ios):session_(session), flow_gen_(flow_gen), ios_(ios), data(2048)
 	{
 		XID = 0;
 	};

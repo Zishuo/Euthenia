@@ -13,7 +13,7 @@ void PacketInTester::send_hello()
 
 	Message hello_str = std::make_shared<std::string>(hello,sizeof(ofp_header));
 	session_.write(hello_str);
-    BOOST_LOG_TRIVIAL(debug) << __func__ << " " << to_hex_string(hello_str->c_str(),sizeof(ofp_header));
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__ << " " << to_hex_string(hello_str->c_str(),sizeof(ofp_header));
 }
 
 void PacketInTester::send_feature_request(Message msg)
@@ -28,7 +28,7 @@ void PacketInTester::send_feature_request(Message msg)
 	feature_request_ptr->xid = htonl(get_XID());
 
 	Message feature_request_str = std::make_shared<std::string>(feature_request,sizeof(ofp_header));
-    BOOST_LOG_TRIVIAL(debug) << __func__<< "  ofp_type " << (ofp_type)header->type << " length " << header->length;
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__ << "  ofp_type " << (ofp_type)header->type << " length " << ntohs(header->length);
 	session_.write(feature_request_str);
 }
 
@@ -36,7 +36,6 @@ void PacketInTester::send_feature_request(Message msg)
 void PacketInTester::onMessage(Message msg)
 {
     ofp_header * header = (ofp_header*)msg->c_str();
-    BOOST_LOG_TRIVIAL(debug) << __func__<< " | ofp_type " <<header->type << " length " << header->length;
 	timespec now;
 	clock_gettime(CLOCK_REALTIME, &now);
 	if(data[group_index].first_packet_time_stamp == 0)
@@ -45,6 +44,7 @@ void PacketInTester::onMessage(Message msg)
 	}
 	data[group_index].last_packet_time_stamp = now.tv_sec;
 	data[group_index].successed_PKTIN_++;
+    BOOST_LOG_TRIVIAL(trace) << __PRETTY_FUNCTION__ << "  ofp_type " << (ofp_type)header->type << " length " << ntohs(header->length);
 }
 
 void PacketInTester::group_test(Group & group, uint32_t last_sec, uint32_t packet_count)
@@ -73,14 +73,14 @@ void PacketInTester::calculate_buffered_packet(Group & group)
 void PacketInTester::do_test()
 {
 
-	uint32_t start = 10;
+	uint32_t start = 100;
 	uint32_t end = 2000;
 	uint32_t step = 100;
     BOOST_LOG_TRIVIAL(debug) << __func__;
 	for(uint32_t i = start; i <= end; i+=step)
 	{
 		Group group;
-		calculate_buffered_packet(group);
+//		calculate_buffered_packet(group);
 		group_test(group, 5, i);
 		data.push_back(group);
 		group.running = false;

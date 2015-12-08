@@ -25,18 +25,18 @@ void Session::connect(uint16_t port, std::string ip)
 
 void Session::start()
 {
-	BOOST_LOG_TRIVIAL(trace) << name_ <<" | start";
+	BOOST_LOG_TRIVIAL(trace) << name_ <<" " << __PRETTY_FUNCTION__;
 	read();
 }
 
-void Session::set_dispatcher(const Dispatcher& dispatcher)
+void Session::set_dispatcher(Dispatcher& dispatcher)
 {
-	dispatcher_ = dispatcher;
+	dispatcher_ = &dispatcher;
 }
 
 void Session::read()
 {
-	BOOST_LOG_TRIVIAL(trace) << name_ <<" | read";
+	BOOST_LOG_TRIVIAL(trace) << name_ <<" " << __PRETTY_FUNCTION__;
 	boost::asio::async_read(socket_,
 	                        boost::asio::buffer(data_,sizeof(ofp_header)),
 	                        boost::asio::transfer_exactly(sizeof(ofp_header)),
@@ -51,18 +51,23 @@ void Session::handle_read_header(const boost::system::error_code& error,
                                  size_t bytes_transferred)
 {
 	ofp_header* header = (ofp_header *)data_;
-	BOOST_LOG_TRIVIAL(debug) << name_ <<" | handle_read_header : "
+	BOOST_LOG_TRIVIAL(debug) << name_ << " " << __PRETTY_FUNCTION__ << " | "
 	                         << " type " << ofp_type(header->type)
 	                         << " length " << ntohs(header->length)
 	                         << " xid " << ntohl(header->xid)
-                             << " hex string " << to_hex_string((char*)data_,sizeof(ofp_header));
+	                         << " hex string " << to_hex_string((char*)data_,sizeof(ofp_header));
 
 	size_t length = ntohs(header->length) - sizeof(ofp_header);
-	if(length == 0) {
-		BOOST_LOG_TRIVIAL(trace) << name_ << " | handle_read_header OFP Message Body length 0";
-		dispatcher_.onMessage(data_);
+	if(length == 0)
+	{
+		BOOST_LOG_TRIVIAL(trace) << name_ <<" "<<__PRETTY_FUNCTION__ <<" | OFP Message Body length 0";
+		dispatcher_->onMessage(data_);
 		read();
-	} else {
+
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(trace) << name_ << " | " << __PRETTY_FUNCTION__ << " read body";
 		boost::asio::async_read(socket_,
 		                        boost::asio::buffer(data_ + sizeof(ofp_header), length),
 		                        boost::asio::transfer_exactly(length),
@@ -78,12 +83,15 @@ void Session::handle_read(const boost::system::error_code& error,
                           ofp_header * header)
 {
 	size_t length = ntohs(header->length);
-    BOOST_LOG_TRIVIAL(debug) << name_ << " | "<< __func__ << " bytes_transferred " << bytes_transferred<< " " << to_hex_string((char *)data_, length);
-	if (!error) {
-		dispatcher_.onMessage(data_);
+	BOOST_LOG_TRIVIAL(debug) << name_ << " " << __PRETTY_FUNCTION__ << " | "<< " bytes_transferred " << bytes_transferred<< " hex sring " << to_hex_string((char *)data_ + 8, bytes_transferred);
+	if (!error)
+	{
+		dispatcher_->onMessage(data_);
 		read();
-	} else {
-		BOOST_LOG_TRIVIAL(fatal) << name_ << " | "<< __func__ << error.message();
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(fatal) << name_ << "  "<<__PRETTY_FUNCTION__<< " | " << error.message();
 	}
 }
 
@@ -100,7 +108,7 @@ void Session::write_in_io_thread(Message message)
 	                         << " type " << ofp_type(header->type)
 	                         << " length " << ntohs(header->length)
 	                         << " xid " << ntohl(header->xid)
-                             << " hex string " << to_hex_string((char*)header,sizeof(ofp_header));
+	                         << " hex string " << to_hex_string((char*)header,sizeof(ofp_header));
 
 	boost::asio::async_write(this->socket(),
 	                         boost::asio::buffer(message->c_str(), message->length()),
@@ -117,9 +125,12 @@ void Session::handle_write(const boost::system::error_code& error,
                            size_t bytes_transferred,
                            Message message)
 {
-	if (!error) {
+	if (!error)
+	{
 		BOOST_LOG_TRIVIAL(debug) << name_ << " | handle_write : " << to_hex_string(message->c_str(), message->length());
-	} else {
+	}
+	else
+	{
 		BOOST_LOG_TRIVIAL(fatal) << name_ << " | handle_write error " << error.message() << std::endl;
 	}
 }

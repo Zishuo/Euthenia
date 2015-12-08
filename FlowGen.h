@@ -7,6 +7,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <unistd.h>
 #include <pcap.h>
 #include <vector>
 #include "header_defu.h"
@@ -19,6 +20,11 @@ public:
 	FlowGen(char * device_name)
 	{
 		pd = pcap_open_live(device_name,1514,1,1000,ebuf);
+		if(pd == nullptr)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "open device failed";
+			exit(1);
+		}
 	};
 	FlowGen(std::function<void(Message message)> onMessage):onMessage_(onMessage) {};
 	int test(int beg_new_flow, int end_new_flow, int step);
@@ -34,7 +40,7 @@ protected:
 	unsigned int fector = 1;
 	int make_pkt(u_char **pkt_data, u_int *pkt_len);
 	int timeval_subtract (timespec *result, timespec * x, timespec *y);
-	int timespec_add(timespec *result, timespec * x, timespec * y);
+	int timespec_add(timespec *result, timespec x, timespec y);
 	int send_packet(uint8_t * pkt_data, uint32_t pkt_len);
 	std::function<void(Message message)> onMessage_;
 };
